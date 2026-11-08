@@ -32,16 +32,17 @@ enum class Fit {
     /** A tablet, either way up. */
     ROOMY,
 
-    /** A phone held upright. */
+    /** A phone, or a small tablet such as a Fire HD 8 (601 dp), held upright. */
     NARROW,
 
-    /** A phone on its side: plenty of width, very little height. */
+    /** A phone or small tablet on its side: plenty of width, very little height. */
     SHORT,
 }
 
+/** The tablet top bar and banners need about 780 dp across, so anything narrower gets the compact layouts. */
 fun fitFor(width: Dp, height: Dp): Fit = when {
     width > height && height < 560.dp -> Fit.SHORT
-    width < 600.dp -> Fit.NARROW
+    width < 780.dp -> Fit.NARROW
     else -> Fit.ROOMY
 }
 
