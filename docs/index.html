@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fleet Strike</title>
+<meta name="description" content="A two-player naval battle game for Android tablets. Play over Wi-Fi or Bluetooth, or practise against the computer.">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<style>
+  :root {
+    --night: #0b1a2e;
+    --deep: #0f2742;
+    --panel: #14304f;
+    --panel-high: #1b3d63;
+    --line: #4f8cc0;
+    --text: #e8f1fa;
+    --dim: #9db6cf;
+    --amber: #ffb547;
+    --sonar: #3ddc97;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: linear-gradient(180deg, var(--night), var(--deep)) fixed;
+    color: var(--text);
+    font: 17px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  main { max-width: 1040px; margin: 0 auto; padding: 40px 16px 64px; }
+  header { text-align: center; }
+  header img { width: 96px; height: 96px; }
+  h1 { font-size: clamp(2.2rem, 7vw, 3.4rem); letter-spacing: .14em; margin: 12px 0 4px; font-weight: 900; }
+  .tagline { color: var(--dim); font-size: 1.15rem; margin: 0 0 28px; }
+  .download {
+    display: inline-flex; align-items: center; gap: 12px;
+    background: var(--amber); color: #1a1206; text-decoration: none;
+    font-weight: 800; font-size: 1.25rem; padding: 16px 30px; border-radius: 16px;
+    box-shadow: 0 6px 24px rgba(255, 181, 71, .25);
+  }
+  .download:hover { filter: brightness(1.06); }
+  .download svg { width: 26px; height: 26px; }
+  .meta { color: var(--dim); font-size: .95rem; margin-top: 12px; }
+  .qr { display: none; margin-top: 22px; color: var(--dim); font-size: .9rem; }
+  .qr canvas, .qr img { background: #fff; padding: 10px; border-radius: 12px; }
+  @media (min-width: 900px) and (hover: hover) { .qr { display: block; } .qr > div { display: inline-block; } }
+  .shots { display: grid; gap: 16px; grid-template-columns: 1fr; margin: 44px 0; }
+  @media (min-width: 760px) { .shots { grid-template-columns: 1fr 1fr; } .shots figure:first-child { grid-column: 1 / -1; } }
+  figure { margin: 0; }
+  figure img { width: 100%; height: auto; display: block; border-radius: 14px; border: 1px solid rgba(79, 140, 192, .35); }
+  figcaption { color: var(--dim); font-size: .9rem; margin-top: 6px; text-align: center; }
+  .cards { display: grid; gap: 16px; grid-template-columns: 1fr; }
+  @media (min-width: 760px) { .cards { grid-template-columns: 1fr 1fr; } }
+  section.card { background: var(--panel); border: 1px solid rgba(79, 140, 192, .35); border-radius: 18px; padding: 20px 22px; }
+  section.card h2 { margin: 0 0 8px; font-size: 1.25rem; }
+  section.card ol, section.card ul { margin: 0; padding-left: 1.25em; }
+  section.card li { margin: 4px 0; }
+  .accent-sonar { border-color: rgba(61, 220, 151, .45) !important; }
+  .accent-amber { border-color: rgba(255, 181, 71, .45) !important; }
+  code { background: var(--panel-high); padding: 1px 6px; border-radius: 6px; }
+  a { color: var(--amber); }
+  footer { color: var(--dim); text-align: center; font-size: .9rem; margin-top: 40px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="icon.svg" alt="">
+    <h1>FLEET STRIKE</h1>
+    <p class="tagline">Hide your fleet. Hunt theirs. A two-player naval battle for Android tablets.</p>
+    <a class="download" href="https://github.com/alexcch-byte/fleet-strike/releases/latest/download/FleetStrike.apk">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16"/></svg>
+      Download for Android
+    </a>
+    <div class="meta">Latest version · free · Android 8.0 or newer (Amazon Fire tablets too) · about 8 MB</div>
+    <div class="qr">
+      <p>On a computer? Scan this with the tablet's camera to open this page there.</p>
+      <div id="qr"></div>
+    </div>
+  </header>
+
+  <div class="shots">
+    <figure>
+      <img src="screenshots/battle.png" alt="Battle screen: your fleet on the left, the enemy's waters on the right with hits and misses marked" loading="lazy">
+      <figcaption>Your fleet on the left, enemy waters on the right. Tap a square to fire.</figcaption>
+    </figure>
+    <figure>
+      <img src="screenshots/deploy.png" alt="Deploy screen: dragging ships onto the grid" loading="lazy">
+      <figcaption>Drag ships into place; tap one to turn it.</figcaption>
+    </figure>
+    <figure>
+      <img src="screenshots/home.png" alt="Home screen with Wi-Fi, Bluetooth and practice options" loading="lazy">
+      <figcaption>Play over Wi-Fi, Bluetooth, or against the computer.</figcaption>
+    </figure>
+  </div>
+
+  <div class="cards">
+    <section class="card accent-amber">
+      <h2>Install on a tablet</h2>
+      <ol>
+        <li>Open this page on the tablet and tap <strong>Download for Android</strong>.</li>
+        <li>Open the downloaded <code>FleetStrike.apk</code> (from the notification or the Downloads app).</li>
+        <li>If Android asks, let your browser <strong>install unknown apps</strong>, then go back and tap <strong>Install</strong>.</li>
+        <li>If Play Protect warns about an unknown app, tap <strong>More details → Install anyway</strong>.</li>
+      </ol>
+      <p>Install it on both tablets. To update later, just install the new download over the old one.</p>
+    </section>
+    <section class="card accent-sonar">
+      <h2>Play a friend</h2>
+      <ul>
+        <li><strong>Wi-Fi:</strong> both tablets on the same Wi-Fi (or one sharing a hotspot). One taps <em>Host game</em>, the other taps <em>Join game</em> and picks it from the list. If it doesn't appear, type the address shown on the host.</li>
+        <li><strong>Bluetooth:</strong> no Wi-Fi needed. One taps <em>Host game</em> and allows it to be visible; the other taps <em>Join game</em>, allows <em>Nearby devices</em>, and picks the host.</li>
+        <li><strong>Practice:</strong> play the computer on Easy, Normal or Hard.</li>
+      </ul>
+    </section>
+    <section class="card">
+      <h2>How to play</h2>
+      <ul>
+        <li>Each player secretly places five ships: Carrier (5), Battleship (4), Cruiser (3), Submarine (3), Destroyer (2).</li>
+        <li>Take turns calling a square on the other player's grid. Red fire is a hit, white rings a miss.</li>
+        <li>Sink all five enemy ships to win. Optional house rule for the host: a hit earns another shot.</li>
+      </ul>
+    </section>
+    <section class="card">
+      <h2>No peeking</h2>
+      <p>Each tablet keeps its own fleet. When you lock in your layout, only a sealed fingerprint of it is sent. At the end both fleets are revealed and checked against every reported hit and miss, so a cheater gets caught.</p>
+    </section>
+  </div>
+
+  <footer>
+    <p><a href="https://github.com/alexcch-byte/fleet-strike">Source code on GitHub</a> · <a href="https://github.com/alexcch-byte/fleet-strike/releases">All versions</a></p>
+  </footer>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  try {
+    if (window.QRCode) new QRCode(document.getElementById("qr"), { text: location.href, width: 168, height: 168 });
+  } catch (e) {}
+</script>
+</body>
+</html>
