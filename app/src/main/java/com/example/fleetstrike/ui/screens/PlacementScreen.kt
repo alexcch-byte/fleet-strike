@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,6 +40,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
@@ -144,7 +147,7 @@ private class Deployment {
 }
 
 @Composable
-fun PlacementScreen(s: MatchState, session: MatchSession, sound: SoundFx) {
+fun PlacementScreen(s: MatchState, session: MatchSession, sound: SoundFx, compact: Boolean = false) {
     val deployment = remember(s.round) { Deployment() }
     val haptics = LocalHapticFeedback.current
     val locked = s.myReady
@@ -159,7 +162,8 @@ fun PlacementScreen(s: MatchState, session: MatchSession, sound: SoundFx) {
     Box(Modifier.fillMaxSize()) {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val wide = maxWidth > maxHeight
-            val boardSize: Dp = if (wide) min(maxHeight, maxWidth * 0.58f) else min(maxWidth, maxHeight * 0.55f)
+            val boardSize: Dp = if (wide) min(maxHeight, maxWidth * 0.58f) else min(maxWidth, maxHeight * 0.56f)
+            val gap = if (compact) 12.dp else 24.dp
             val board = @Composable {
                 BoardView(
                     ships = fleet.ships.values.map { ShipOnBoard(it, ShipLook.NORMAL) },
@@ -184,17 +188,17 @@ fun PlacementScreen(s: MatchState, session: MatchSession, sound: SoundFx) {
                 )
             }
             val panel = @Composable { modifier: Modifier ->
-                DeployPanel(s, deployment, locked, modifier, onReady = {
+                DeployPanel(s, deployment, locked, compact, modifier, onReady = {
                     if (session.commitFleet(deployment.fleet)) sound.play(Sfx.CLICK)
                 }, onPlaced = ::placed)
             }
             if (wide) {
-                Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(24.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(gap), verticalAlignment = Alignment.CenterVertically) {
                     board()
                     panel(Modifier.weight(1f).fillMaxSize())
                 }
             } else {
-                Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(gap)) {
                     board()
                     panel(Modifier.weight(1f).fillMaxWidth())
                 }
@@ -217,63 +221,99 @@ fun PlacementScreen(s: MatchState, session: MatchSession, sound: SoundFx) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DeployPanel(
     s: MatchState,
     deployment: Deployment,
     locked: Boolean,
+    compact: Boolean,
     modifier: Modifier,
     onReady: () -> Unit,
     onPlaced: () -> Unit,
 ) {
-    Panel(modifier.verticalScroll(rememberScrollState())) {
-        Text("Deploy your fleet", color = Sea.Text, fontSize = 28.sp, fontWeight = FontWeight.Bold)
+    Panel(modifier.verticalScroll(rememberScrollState()), compact = compact) {
+        Text("Deploy your fleet", color = Sea.Text, fontSize = if (compact) 20.sp else 28.sp, fontWeight = FontWeight.Bold)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Box(Modifier.size(12.dp).background(if (s.opponentReady) Sea.Sonar else Sea.Amber, CircleShape))
+            Box(Modifier.size(if (compact) 10.dp else 12.dp).background(if (s.opponentReady) Sea.Sonar else Sea.Amber, CircleShape))
             Text(
                 if (s.opponentReady) "${s.opponentName} is ready and waiting" else "${s.opponentName} is deploying…",
                 color = Sea.TextDim,
-                fontSize = 16.sp,
+                fontSize = if (compact) 14.sp else 16.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
         }
         if (locked) {
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(if (compact) 2.dp else 8.dp))
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                CircularProgressIndicator(Modifier.size(26.dp), strokeWidth = 3.dp, color = Sea.Sonar)
-                Text("Fleet locked in. Waiting for ${s.opponentName}…", color = Sea.Text, fontSize = 18.sp)
+                CircularProgressIndicator(Modifier.size(if (compact) 22.dp else 26.dp), strokeWidth = 3.dp, color = Sea.Sonar)
+                Text("Fleet locked in. Waiting for ${s.opponentName}…", color = Sea.Text, fontSize = if (compact) 16.sp else 18.sp)
             }
-            Hint("Your layout stays on this tablet. Only a sealed fingerprint of it was sent, and it's checked when the game ends.")
+            Hint("Your layout stays on this device. Only a sealed fingerprint of it was sent, and it's checked when the game ends.")
             return@Panel
         }
 
-        Hint("Drag ships onto your waters. Tap a ship on the grid to turn it. Drag it off the grid to take it back.")
+        Hint(
+            if (compact) "Drag ships onto the grid. Tap a ship to turn it; drag it off to take it back."
+            else "Drag ships onto your waters. Tap a ship on the grid to turn it. Drag it off the grid to take it back.",
+        )
         val drag = deployment.drag
         val inTray = ShipType.entries.filter { it !in deployment.fleet.ships && !(drag?.from != null && drag.type == it) }
         if (inTray.isEmpty()) {
-            Text("All ships deployed.", color = Sea.Sonar, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
+            Text("All ships deployed.", color = Sea.Sonar, fontSize = if (compact) 15.sp else 17.sp, fontWeight = FontWeight.SemiBold)
         }
-        for (type in inTray) {
-            key(type) {
-                TrayShip(type, deployment, dimmed = drag?.type == type && drag.from == null, onPlaced = onPlaced)
+        if (compact) {
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                for (type in inTray) {
+                    key(type) {
+                        TrayShip(type, deployment, dimmed = drag?.type == type && drag.from == null, compact = true, onPlaced = onPlaced)
+                    }
+                }
             }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                QuietButton("Shuffle", {
+                    deployment.fleet = Fleet.random()
+                    onPlaced()
+                }, small = true)
+                QuietButton("Clear", { deployment.fleet = Fleet() }, enabled = deployment.fleet.ships.isNotEmpty(), small = true)
+                BigButton("Ready", onReady, Modifier.weight(1f), enabled = deployment.fleet.isComplete, color = Sea.Sonar, small = true)
+            }
+        } else {
+            for (type in inTray) {
+                key(type) {
+                    TrayShip(type, deployment, dimmed = drag?.type == type && drag.from == null, compact = false, onPlaced = onPlaced)
+                }
+            }
+            Spacer(Modifier.height(6.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                QuietButton("Shuffle", {
+                    deployment.fleet = Fleet.random()
+                    onPlaced()
+                })
+                QuietButton("Clear", { deployment.fleet = Fleet() }, enabled = deployment.fleet.ships.isNotEmpty())
+            }
+            BigButton("Ready for battle", onReady, Modifier.fillMaxWidth(), enabled = deployment.fleet.isComplete, color = Sea.Sonar)
         }
-        Spacer(Modifier.height(6.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            QuietButton("Shuffle", {
-                deployment.fleet = Fleet.random()
-                onPlaced()
-            })
-            QuietButton("Clear", { deployment.fleet = Fleet() }, enabled = deployment.fleet.ships.isNotEmpty())
-        }
-        BigButton("Ready for battle", onReady, Modifier.fillMaxWidth(), enabled = deployment.fleet.isComplete, color = Sea.Sonar)
     }
 }
 
+/** A ship waiting in the tray: drag it onto the grid, or tap it to drop it somewhere free. Phones show it with its name underneath. */
 @Composable
-private fun TrayShip(type: ShipType, deployment: Deployment, dimmed: Boolean, onPlaced: () -> Unit) {
+private fun TrayShip(type: ShipType, deployment: Deployment, dimmed: Boolean, compact: Boolean, onPlaced: () -> Unit) {
     var itemRoot by remember { mutableStateOf(Offset.Zero) }
-    val cell = 34.dp
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+    val cell = if (compact) 26.dp else 34.dp
+    val label = @Composable {
+        if (compact) {
+            Text(type.title, color = Sea.TextDim, fontSize = 11.sp, maxLines = 1)
+        } else {
+            Column {
+                Text(type.title, color = Sea.Text, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                Text("${type.length} squares", color = Sea.TextDim, fontSize = 13.sp)
+            }
+        }
+    }
+    val ship = @Composable {
         Canvas(
             Modifier
                 .width(cell * type.length)
@@ -303,9 +343,16 @@ private fun TrayShip(type: ShipType, deployment: Deployment, dimmed: Boolean, on
         ) {
             drawShip(type, Offset.Zero, size.height, Orientation.HORIZONTAL, ShipLook.NORMAL)
         }
-        Column {
-            Text(type.title, color = Sea.Text, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-            Text("${type.length} squares", color = Sea.TextDim, fontSize = 13.sp)
+    }
+    if (compact) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            ship()
+            label()
+        }
+    } else {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            ship()
+            label()
         }
     }
 }

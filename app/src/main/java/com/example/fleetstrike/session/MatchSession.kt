@@ -103,7 +103,7 @@ class MatchSession(
             try {
                 for (line in link.incoming) Msg.decode(line)?.let(::handle)
             } finally {
-                if (!leaving) dropped("The connection to ${opponentOr("the other tablet")} was lost.")
+                if (!leaving) dropped("The connection to ${opponentOr("the other device")} was lost.")
             }
         }
         scope.launch {
@@ -179,7 +179,7 @@ class MatchSession(
 
     private fun onHello(msg: Msg.Hello) {
         if (msg.app != APP_ID || msg.version != PROTOCOL_VERSION) {
-            dropped("The other tablet has a different version of Fleet Strike. Install the same version on both.")
+            dropped("The other device has a different version of Fleet Strike. Install the same version on both.")
             link.close()
             return
         }

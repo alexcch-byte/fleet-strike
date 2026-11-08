@@ -8,6 +8,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -38,6 +39,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fleetstrike.net.Bluetooth
@@ -72,7 +74,7 @@ fun LobbyScreen(vm: AppViewModel, transport: Transport, hosting: Boolean) {
     fun withBluetooth(perms: Array<String>, then: () -> Unit) {
         lobby.error = null
         when {
-            !Bluetooth.isAvailable(context) -> vm.lobbyError("This tablet doesn't have Bluetooth. Play over Wi-Fi instead.")
+            !Bluetooth.isAvailable(context) -> vm.lobbyError("This device doesn't have Bluetooth. Play over Wi-Fi instead.")
             perms.isNotEmpty() && !Bluetooth.hasPermissions(context, perms) -> {
                 next.value = { withBluetooth(perms, then) }
                 askPermissions.launch(perms)
@@ -112,26 +114,30 @@ fun LobbyScreen(vm: AppViewModel, transport: Transport, hosting: Boolean) {
     }
 
     SeaBackground {
-        Column(
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(28.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(18.dp),
-        ) {
-            Text(
-                (if (hosting) "Host" else "Join") + " a game over ${transport.title}",
-                color = Sea.Text,
-                fontSize = 30.sp,
-                fontWeight = FontWeight.Bold,
-            )
-            Column(Modifier.widthIn(max = 720.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                lobby.error?.let { ErrorPanel(it, onRetry = if (transport == Transport.BLUETOOTH) startBluetooth else null) }
-                lobby.connectingTo?.let { Waiting("Connecting to $it…") }
-                when {
-                    hosting -> HostPanel(transport, lobby, onMakeVisible = ::makeVisible)
-                    transport == Transport.WIFI -> WifiJoinPanel(vm, lobby)
-                    else -> BluetoothJoinPanel(vm, lobby, onScan = { withBluetooth(Bluetooth.joinPermissions()) { vm.scanBluetooth() } })
+        BoxWithConstraints(Modifier.fillMaxSize()) {
+            val narrow = maxWidth < 600.dp
+            Column(
+                Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(if (narrow) 16.dp else 28.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(if (narrow) 14.dp else 18.dp),
+            ) {
+                Text(
+                    (if (hosting) "Host" else "Join") + " a game over ${transport.title}",
+                    color = Sea.Text,
+                    fontSize = if (narrow) 24.sp else 30.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                )
+                Column(Modifier.widthIn(max = 720.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    lobby.error?.let { ErrorPanel(it, onRetry = if (transport == Transport.BLUETOOTH) startBluetooth else null) }
+                    lobby.connectingTo?.let { Waiting("Connecting to $it…") }
+                    when {
+                        hosting -> HostPanel(transport, lobby, onMakeVisible = ::makeVisible)
+                        transport == Transport.WIFI -> WifiJoinPanel(vm, lobby)
+                        else -> BluetoothJoinPanel(vm, lobby, onScan = { withBluetooth(Bluetooth.joinPermissions()) { vm.scanBluetooth() } })
+                    }
+                    QuietButton("Back", vm::cancelLobby, Modifier.align(Alignment.CenterHorizontally))
                 }
-                QuietButton("Back", vm::cancelLobby, Modifier.align(Alignment.CenterHorizontally))
             }
         }
     }
@@ -143,16 +149,16 @@ private fun HostPanel(transport: Transport, lobby: LobbyState, onMakeVisible: ()
         Waiting(lobby.status.ifEmpty { "Getting ready…" })
         val address = lobby.hostAddress
         if (transport == Transport.WIFI) {
-            Hint("On the other tablet, open Fleet Strike, tap Join game under Wi-Fi and pick this game from the list.")
+            Hint("On the other device, open Fleet Strike, tap Join game under Wi-Fi and pick this game from the list.")
             if (address != null) {
-                Text("If it doesn't show up there, type this address on the other tablet:", color = Sea.TextDim, fontSize = 14.sp)
+                Text("If it doesn't show up there, type this address on the other device:", color = Sea.TextDim, fontSize = 14.sp)
                 Text(address, color = Sea.Amber, fontSize = 30.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
             }
         } else {
-            Hint("On the other tablet, open Fleet Strike, tap Join game under Bluetooth and pick this tablet:")
+            Hint("On the other device, open Fleet Strike, tap Join game under Bluetooth and pick this one:")
             if (address != null) Text(address, color = Sea.Amber, fontSize = 26.sp, fontWeight = FontWeight.Bold)
-            Hint("If it isn't listed there, make this tablet visible again (it stays visible for 5 minutes).")
-            QuietButton("Make this tablet visible", onMakeVisible)
+            Hint("If it isn't listed there, make this device visible again (it stays visible for 5 minutes).")
+            QuietButton("Make this device visible", onMakeVisible)
         }
     }
 }
@@ -184,15 +190,15 @@ private fun WifiJoinPanel(vm: AppViewModel, lobby: LobbyState) {
             )
             BigButton("Join", { vm.joinWifiByAddress(address) }, enabled = address.isNotBlank() && lobby.connectingTo == null)
         }
-        lobby.hostAddress?.let { Hint("This tablet is $it") }
+        lobby.hostAddress?.let { Hint("This device is $it") }
     }
 }
 
 @Composable
 private fun BluetoothJoinPanel(vm: AppViewModel, lobby: LobbyState, onScan: () -> Unit) {
     Panel(Modifier.fillMaxWidth(), accent = Sea.Sonar) {
-        PanelTitle("Paired tablets")
-        if (lobby.paired.isEmpty()) Hint("None yet. Tablets you've paired in Bluetooth settings appear here.")
+        PanelTitle("Paired devices")
+        if (lobby.paired.isEmpty()) Hint("None yet. Devices you've paired in Bluetooth settings appear here.")
         for (peer in lobby.paired) BluetoothRow(vm, lobby, peer)
     }
     Panel(Modifier.fillMaxWidth()) {
@@ -204,8 +210,8 @@ private fun BluetoothJoinPanel(vm: AppViewModel, lobby: LobbyState, onScan: () -
         }
         if (lobby.nearby.isEmpty()) {
             Hint(
-                if (lobby.scanning) "Searching… The hosting tablet must have tapped Host game under Bluetooth."
-                else "Nothing found. Check the other tablet is hosting and visible, then scan again."
+                if (lobby.scanning) "Searching… The hosting device must have tapped Host game under Bluetooth."
+                else "Nothing found. Check the other device is hosting and visible, then scan again."
             )
         }
         for (peer in lobby.nearby) BluetoothRow(vm, lobby, peer)

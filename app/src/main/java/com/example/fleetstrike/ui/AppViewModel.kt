@@ -54,7 +54,10 @@ class LobbyState {
 class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val prefs = app.getSharedPreferences("fleetstrike", Context.MODE_PRIVATE)
 
-    var playerName by mutableStateOf(prefs.getString(KEY_NAME, null) ?: "Captain ${Random.nextInt(10, 100)}")
+    // A made-up name is saved straight away so the player keeps it until they choose their own.
+    var playerName by mutableStateOf(
+        prefs.getString(KEY_NAME, null) ?: "Captain ${Random.nextInt(10, 100)}".also { prefs.edit { putString(KEY_NAME, it) } },
+    )
         private set
     var bonusShot by mutableStateOf(prefs.getBoolean(KEY_BONUS, false))
         private set
@@ -169,7 +172,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             } catch (e: CancellationException) {
                 throw e
             } catch (_: Exception) {
-                l.error = "Couldn't reach $label. Make sure both tablets are on the same Wi-Fi and the other one is hosting."
+                l.error = "Couldn't reach $label. Make sure both devices are on the same Wi-Fi and the other one is hosting."
             } finally {
                 l.connectingTo = null
             }
@@ -205,7 +208,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun searchBluetooth() {
         val l = lobby
-        l.status = "Pick the tablet that is hosting."
+        l.status = "Pick the device that is hosting."
         l.paired = Bluetooth.pairedPeers(getApplication())
         scanBluetooth()
     }

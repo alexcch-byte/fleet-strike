@@ -1,6 +1,6 @@
 # Fleet Strike
 
-A two-player naval battle game for Android tablets. Each player hides five ships on a 10×10 grid and takes turns calling shots at the other's fleet. Tablets link directly over **Wi-Fi** (same network or hotspot) or **Bluetooth**, with no internet server involved. There's also a practice mode against the computer (Easy / Normal / Hard).
+A two-player naval battle game for Android phones and tablets. Each player hides five ships on a 10×10 grid and takes turns calling shots at the other's fleet. Tablets link directly over **Wi-Fi** (same network or hotspot) or **Bluetooth**, with no internet server involved. There's also a practice mode against the computer (Easy / Normal / Hard).
 
 **Download:** https://alexcch-byte.github.io/fleet-strike/
 
@@ -13,7 +13,7 @@ A two-player naval battle game for Android tablets. Each player hides five ships
 - Optional house rule: a hit earns another shot
 - Rematches with a running score; the loser fires first next round
 - Synthesised sound effects, haptics on hits, keeps the screen awake during a match
-- Landscape (side-by-side boards) and portrait layouts
+- Layouts for tablets and for phones held upright or sideways
 
 ## Project layout
 

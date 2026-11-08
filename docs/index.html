@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fleet Strike</title>
-<meta name="description" content="A two-player naval battle game for Android tablets. Play over Wi-Fi or Bluetooth, or practise against the computer.">
+<meta name="description" content="A two-player naval battle game for Android phones and tablets. Play over Wi-Fi or Bluetooth, or practise against the computer.">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <style>
   :root {
@@ -47,6 +47,13 @@
   figure { margin: 0; }
   figure img { width: 100%; height: auto; display: block; border-radius: 14px; border: 1px solid rgba(79, 140, 192, .35); }
   figcaption { color: var(--dim); font-size: .9rem; margin-top: 6px; text-align: center; }
+  .phone {
+    display: flex; gap: 20px; align-items: center; margin: 0 0 44px;
+    background: var(--panel); border: 1px solid rgba(79, 140, 192, .35); border-radius: 18px; padding: 18px;
+  }
+  .phone img { width: 42%; max-width: 240px; height: auto; border-radius: 14px; border: 1px solid rgba(79, 140, 192, .35); }
+  .phone h2 { margin: 0 0 8px; font-size: 1.25rem; }
+  .phone p { margin: 0; }
   .cards { display: grid; gap: 16px; grid-template-columns: 1fr; }
   @media (min-width: 760px) { .cards { grid-template-columns: 1fr 1fr; } }
   section.card { background: var(--panel); border: 1px solid rgba(79, 140, 192, .35); border-radius: 18px; padding: 20px 22px; }
@@ -65,14 +72,14 @@
   <header>
     <img src="icon.svg" alt="">
     <h1>FLEET STRIKE</h1>
-    <p class="tagline">Hide your fleet. Hunt theirs. A two-player naval battle for Android tablets.</p>
+    <p class="tagline">Hide your fleet. Hunt theirs. A two-player naval battle for Android phones and tablets.</p>
     <a class="download" href="https://github.com/alexcch-byte/fleet-strike/releases/latest/download/FleetStrike.apk">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16"/></svg>
       Download for Android
     </a>
     <div class="meta">Latest version · free · Android 8.0 or newer (Amazon Fire tablets too) · about 8 MB</div>
     <div class="qr">
-      <p>On a computer? Scan this with the tablet's camera to open this page there.</p>
+      <p>On a computer? Scan this with your phone or tablet's camera to open this page there.</p>
       <div id="qr"></div>
     </div>
   </header>
@@ -92,21 +99,29 @@
     </figure>
   </div>
 
+  <section class="phone">
+    <img src="screenshots/phone.png" alt="Fleet Strike on a phone: the board you fire at on top, your own fleet below" loading="lazy">
+    <div>
+      <h2>Phones too</h2>
+      <p>On a phone the board you fire at sits on top and your own fleet below it. Turn the phone sideways to see both side by side. A phone and a tablet can play each other.</p>
+    </div>
+  </section>
+
   <div class="cards">
     <section class="card accent-amber">
-      <h2>Install on a tablet</h2>
+      <h2>Install on a phone or tablet</h2>
       <ol>
-        <li>Open this page on the tablet and tap <strong>Download for Android</strong>.</li>
+        <li>Open this page on the device and tap <strong>Download for Android</strong>.</li>
         <li>Open the downloaded <code>FleetStrike.apk</code> (from the notification or the Downloads app).</li>
         <li>If Android asks, let your browser <strong>install unknown apps</strong>, then go back and tap <strong>Install</strong>.</li>
         <li>If Play Protect warns about an unknown app, tap <strong>More details → Install anyway</strong>.</li>
       </ol>
-      <p>Install it on both tablets. To update later, just install the new download over the old one.</p>
+      <p>Install it on both devices. To update later, just install the new download over the old one.</p>
     </section>
     <section class="card accent-sonar">
       <h2>Play a friend</h2>
       <ul>
-        <li><strong>Wi-Fi:</strong> both tablets on the same Wi-Fi (or one sharing a hotspot). One taps <em>Host game</em>, the other taps <em>Join game</em> and picks it from the list. If it doesn't appear, type the address shown on the host.</li>
+        <li><strong>Wi-Fi:</strong> both devices on the same Wi-Fi (or one sharing a hotspot). One taps <em>Host game</em>, the other taps <em>Join game</em> and picks it from the list. If it doesn't appear, type the address shown on the host.</li>
         <li><strong>Bluetooth:</strong> no Wi-Fi needed. One taps <em>Host game</em> and allows it to be visible; the other taps <em>Join game</em>, allows <em>Nearby devices</em>, and picks the host.</li>
         <li><strong>Practice:</strong> play the computer on Easy, Normal or Hard.</li>
       </ul>

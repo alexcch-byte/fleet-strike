@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,6 +32,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -116,25 +118,33 @@ fun MatchScreen(vm: AppViewModel, match: Screen.Match) {
     }
 
     SeaBackground {
-        Column(Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            TopBar(s, match.via, vm.soundOn, vm::updateSound, onLeave = {
-                if (s.disconnected != null || s.phase == Phase.GAME_OVER) vm.leaveMatch() else confirmLeave = true
-            })
-            Box(Modifier.weight(1f).fillMaxWidth()) {
-                when (s.phase) {
-                    Phase.HANDSHAKE -> Row(Modifier.align(Alignment.Center), verticalAlignment = Alignment.CenterVertically) {
-                        CircularProgressIndicator(Modifier.size(28.dp), color = Sea.Amber)
-                        Spacer(Modifier.width(16.dp))
-                        Text("Connected. Saying hello to the other tablet…", color = Sea.Text, fontSize = 20.sp)
+        BoxWithConstraints(Modifier.fillMaxSize()) {
+            val fit = fitFor(maxWidth, maxHeight)
+            val roomy = fit == Fit.ROOMY
+            Column(
+                Modifier.fillMaxSize().padding(horizontal = if (roomy) 20.dp else 10.dp, vertical = if (roomy) 12.dp else 6.dp),
+                verticalArrangement = Arrangement.spacedBy(if (roomy) 12.dp else 8.dp),
+            ) {
+                TopBar(s, match.via, vm.soundOn, vm::updateSound, compact = !roomy, onLeave = {
+                    if (s.disconnected != null || s.phase == Phase.GAME_OVER) vm.leaveMatch() else confirmLeave = true
+                })
+                Box(Modifier.weight(1f).fillMaxWidth()) {
+                    when (s.phase) {
+                        Phase.HANDSHAKE -> Row(Modifier.align(Alignment.Center), verticalAlignment = Alignment.CenterVertically) {
+                            CircularProgressIndicator(Modifier.size(28.dp), color = Sea.Amber)
+                            Spacer(Modifier.width(16.dp))
+                            Text("Connected. Saying hello to the other device…", color = Sea.Text, fontSize = if (roomy) 20.sp else 16.sp)
+                        }
+                        Phase.PLACEMENT -> PlacementScreen(s, session, vm.sound, compact = !roomy)
+                        Phase.BATTLE, Phase.GAME_OVER -> BattleScreen(
+                            s = s,
+                            flash = flash,
+                            fit = fit,
+                            onFire = { session.fire(it) },
+                            onRematch = session::requestRematch,
+                            onLeave = vm::leaveMatch,
+                        )
                     }
-                    Phase.PLACEMENT -> PlacementScreen(s, session, vm.sound)
-                    Phase.BATTLE, Phase.GAME_OVER -> BattleScreen(
-                        s = s,
-                        flash = flash,
-                        onFire = { session.fire(it) },
-                        onRematch = session::requestRematch,
-                        onLeave = vm::leaveMatch,
-                    )
                 }
             }
         }
@@ -167,25 +177,44 @@ fun MatchScreen(vm: AppViewModel, match: Screen.Match) {
     }
 }
 
+/**
+ * Score, sound and leave. On a tablet it also shows the game's name and how the tablets are linked; on a phone only
+ * the essentials stay, and long player names are shortened rather than pushing the buttons off screen.
+ */
 @Composable
-private fun TopBar(s: MatchState, via: String, soundOn: Boolean, onSound: (Boolean) -> Unit, onLeave: () -> Unit) {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text("FLEET STRIKE", color = Sea.Amber, fontSize = 18.sp, fontWeight = FontWeight.Black, letterSpacing = 3.sp)
-        Spacer(Modifier.weight(1f))
-        if (s.opponentName.isNotEmpty()) {
-            Row(
-                Modifier.background(Sea.Panel, RoundedCornerShape(50)).padding(horizontal = 16.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                Text(s.myName, color = Sea.Text, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-                Text("${s.wins} : ${s.losses}", color = Sea.Amber, fontSize = 18.sp, fontWeight = FontWeight.Black)
-                Text(s.opponentName, color = Sea.Text, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-            }
+private fun TopBar(s: MatchState, via: String, soundOn: Boolean, onSound: (Boolean) -> Unit, compact: Boolean, onLeave: () -> Unit) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 12.dp)) {
+        if (compact) {
+            ScoreChip(s, compact = true, modifier = Modifier.weight(1f))
+            TextButton(onClick = { onSound(!soundOn) }) { Text(if (soundOn) "🔊" else "🔇", fontSize = 18.sp) }
+            QuietButton("Leave", onLeave, small = true)
+        } else {
+            Text("FLEET STRIKE", color = Sea.Amber, fontSize = 18.sp, fontWeight = FontWeight.Black, letterSpacing = 3.sp, maxLines = 1)
+            Spacer(Modifier.weight(1f))
+            ScoreChip(s, compact = false)
+            Spacer(Modifier.weight(1f))
+            Text(via, color = Sea.TextDim, fontSize = 14.sp, maxLines = 1)
+            TextButton(onClick = { onSound(!soundOn) }) { Text(if (soundOn) "Sound on" else "Sound off", color = Sea.TextDim, maxLines = 1) }
+            QuietButton("Leave", onLeave)
         }
-        Spacer(Modifier.weight(1f))
-        Text(via, color = Sea.TextDim, fontSize = 14.sp)
-        TextButton(onClick = { onSound(!soundOn) }) { Text(if (soundOn) "Sound on" else "Sound off", color = Sea.TextDim) }
-        QuietButton("Leave", onLeave)
+    }
+}
+
+@Composable
+private fun ScoreChip(s: MatchState, compact: Boolean, modifier: Modifier = Modifier) {
+    if (s.opponentName.isEmpty()) {
+        Spacer(modifier)
+        return
+    }
+    Row(
+        modifier.background(Sea.Panel, RoundedCornerShape(50)).padding(horizontal = if (compact) 12.dp else 16.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(if (compact) 8.dp else 10.dp, Alignment.CenterHorizontally),
+    ) {
+        val nameSize = if (compact) 14.sp else 16.sp
+        val names = if (compact) Modifier.weight(1f, fill = false) else Modifier
+        Text(s.myName, color = Sea.Text, fontSize = nameSize, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = names)
+        Text("${s.wins} : ${s.losses}", color = Sea.Amber, fontSize = if (compact) 16.sp else 18.sp, fontWeight = FontWeight.Black, maxLines = 1)
+        Text(s.opponentName, color = Sea.Text, fontSize = nameSize, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = names)
     }
 }

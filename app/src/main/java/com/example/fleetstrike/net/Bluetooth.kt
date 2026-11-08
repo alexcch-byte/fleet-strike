@@ -103,7 +103,7 @@ object Bluetooth {
      * tablets having to be paired first, and the secure one covers devices that insist on pairing.
      */
     suspend fun host(context: Context): Link = coroutineScope {
-        val adapter = adapter(context) ?: throw IOException("This tablet has no Bluetooth.")
+        val adapter = adapter(context) ?: throw IOException("This device has no Bluetooth.")
         val servers = listOfNotNull(
             runCatching { adapter.listenUsingInsecureRfcommWithServiceRecord(SERVICE_NAME, SERVICE_UUID) }.getOrNull(),
             runCatching { adapter.listenUsingRfcommWithServiceRecord(SERVICE_NAME, SERVICE_UUID) }.getOrNull(),

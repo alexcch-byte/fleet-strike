@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
@@ -20,9 +21,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fleetstrike.ui.theme.Sea
+
+/** How much room a screen has. Tablets get the roomy layouts; phones get tighter ones. */
+enum class Fit {
+    /** A tablet, either way up. */
+    ROOMY,
+
+    /** A phone held upright. */
+    NARROW,
+
+    /** A phone on its side: plenty of width, very little height. */
+    SHORT,
+}
+
+fun fitFor(width: Dp, height: Dp): Fit = when {
+    width > height && height < 560.dp -> Fit.SHORT
+    width < 600.dp -> Fit.NARROW
+    else -> Fit.ROOMY
+}
 
 @Composable
 fun SeaBackground(content: @Composable BoxScope.() -> Unit) {
@@ -36,13 +57,18 @@ fun SeaBackground(content: @Composable BoxScope.() -> Unit) {
 }
 
 @Composable
-fun Panel(modifier: Modifier = Modifier, accent: Color = Sea.GridLine, content: @Composable ColumnScope.() -> Unit) {
+fun Panel(
+    modifier: Modifier = Modifier,
+    accent: Color = Sea.GridLine,
+    compact: Boolean = false,
+    content: @Composable ColumnScope.() -> Unit,
+) {
     Column(
         modifier
-            .background(Sea.Panel.copy(alpha = 0.92f), RoundedCornerShape(18.dp))
-            .border(1.dp, accent.copy(alpha = 0.35f), RoundedCornerShape(18.dp))
-            .padding(18.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+            .background(Sea.Panel.copy(alpha = 0.92f), RoundedCornerShape(if (compact) 14.dp else 18.dp))
+            .border(1.dp, accent.copy(alpha = 0.35f), RoundedCornerShape(if (compact) 14.dp else 18.dp))
+            .padding(if (compact) 12.dp else 18.dp),
+        verticalArrangement = Arrangement.spacedBy(if (compact) 8.dp else 10.dp),
         content = content,
     )
 }
@@ -58,21 +84,49 @@ fun Hint(text: String, modifier: Modifier = Modifier, color: Color = Sea.TextDim
 }
 
 @Composable
-fun BigButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, color: Color = Sea.Amber) {
+fun BigButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    color: Color = Sea.Amber,
+    small: Boolean = false,
+) {
     Button(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier,
-        shape = RoundedCornerShape(14.dp),
+        shape = RoundedCornerShape(if (small) 12.dp else 14.dp),
+        contentPadding = if (small) PaddingValues(horizontal = 14.dp, vertical = 6.dp) else ButtonDefaults.ContentPadding,
         colors = ButtonDefaults.buttonColors(containerColor = color, contentColor = Color(0xFF1A1206)),
     ) {
-        Text(text, fontSize = 17.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(vertical = 4.dp))
+        Text(
+            text,
+            fontSize = if (small) 15.sp else 17.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(vertical = if (small) 2.dp else 4.dp),
+        )
     }
 }
 
 @Composable
-fun QuietButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
-    OutlinedButton(onClick = onClick, enabled = enabled, modifier = modifier, shape = RoundedCornerShape(14.dp)) {
-        Text(text, fontSize = 16.sp, color = if (enabled) Sea.Text else Sea.TextDim, modifier = Modifier.padding(vertical = 2.dp))
+fun QuietButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true, small: Boolean = false) {
+    OutlinedButton(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier,
+        shape = RoundedCornerShape(if (small) 12.dp else 14.dp),
+        contentPadding = if (small) PaddingValues(horizontal = 12.dp, vertical = 4.dp) else ButtonDefaults.ContentPadding,
+    ) {
+        Text(
+            text,
+            fontSize = if (small) 14.sp else 16.sp,
+            color = if (enabled) Sea.Text else Sea.TextDim,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(vertical = 2.dp),
+        )
     }
 }

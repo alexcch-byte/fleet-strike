@@ -53,6 +53,7 @@ fun HomeScreen(vm: AppViewModel) {
     SeaBackground {
         BoxWithConstraints(Modifier.fillMaxSize()) {
             val wide = maxWidth > maxHeight && maxWidth > 700.dp
+            val compact = maxWidth < 480.dp || maxHeight < 560.dp
             if (wide) {
                 Row(
                     Modifier.fillMaxSize().padding(28.dp),
@@ -64,26 +65,26 @@ fun HomeScreen(vm: AppViewModel) {
                         verticalArrangement = Arrangement.spacedBy(18.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Masthead()
+                        Masthead(compact)
                         CaptainPanel(vm)
                     }
                     Column(
                         Modifier.weight(1.15f).verticalScroll(rememberScrollState()),
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
-                        PlayPanels(vm)
+                        PlayPanels(vm, compact = false)
                     }
                 }
             } else {
                 Column(
-                    Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
+                    Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(if (compact) 16.dp else 20.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Masthead()
+                    Masthead(compact)
                     Column(Modifier.widthIn(max = 640.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         CaptainPanel(vm)
-                        PlayPanels(vm)
+                        PlayPanels(vm, compact)
                     }
                 }
             }
@@ -92,12 +93,19 @@ fun HomeScreen(vm: AppViewModel) {
 }
 
 @Composable
-private fun Masthead() {
+private fun Masthead(compact: Boolean) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Radar(Modifier.size(190.dp))
-        Spacer(Modifier.height(10.dp))
-        Text("FLEET STRIKE", color = Sea.Text, fontSize = 44.sp, fontWeight = FontWeight.Black, letterSpacing = 6.sp)
-        Text("Hide your fleet. Hunt theirs.", color = Sea.TextDim, fontSize = 17.sp)
+        Radar(Modifier.size(if (compact) 120.dp else 190.dp))
+        Spacer(Modifier.height(if (compact) 6.dp else 10.dp))
+        Text(
+            "FLEET STRIKE",
+            color = Sea.Text,
+            fontSize = if (compact) 32.sp else 44.sp,
+            fontWeight = FontWeight.Black,
+            letterSpacing = if (compact) 3.sp else 6.sp,
+            maxLines = 1,
+        )
+        Text("Hide your fleet. Hunt theirs.", color = Sea.TextDim, fontSize = if (compact) 15.sp else 17.sp)
     }
 }
 
@@ -130,10 +138,10 @@ private fun SettingRow(title: String, detail: String?, checked: Boolean, onChang
 }
 
 @Composable
-private fun PlayPanels(vm: AppViewModel) {
+private fun PlayPanels(vm: AppViewModel, compact: Boolean) {
     Panel(Modifier.fillMaxWidth(), accent = Sea.Sonar) {
         PanelTitle("Play over Wi-Fi")
-        Hint("Both tablets on the same Wi-Fi network (or one sharing a hotspot with the other). One hosts, the other joins.")
+        Hint("Both devices on the same Wi-Fi network (or one sharing a hotspot with the other). One hosts, the other joins.")
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             BigButton("Host game", { vm.openLobby(Transport.WIFI, hosting = true) }, Modifier.weight(1f))
             BigButton("Join game", { vm.openLobby(Transport.WIFI, hosting = false) }, Modifier.weight(1f), color = Sea.Sonar)
@@ -141,7 +149,7 @@ private fun PlayPanels(vm: AppViewModel) {
     }
     Panel(Modifier.fillMaxWidth(), accent = Color(0xFF6FA8FF)) {
         PanelTitle("Play over Bluetooth")
-        Hint("No Wi-Fi needed. Keep the tablets within a few metres of each other.")
+        Hint("No Wi-Fi needed. Keep the devices within a few metres of each other.")
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             BigButton("Host game", { vm.openLobby(Transport.BLUETOOTH, hosting = true) }, Modifier.weight(1f))
             BigButton("Join game", { vm.openLobby(Transport.BLUETOOTH, hosting = false) }, Modifier.weight(1f), color = Sea.Sonar)
@@ -149,7 +157,7 @@ private fun PlayPanels(vm: AppViewModel) {
     }
     Panel(Modifier.fillMaxWidth()) {
         PanelTitle("Practice vs computer")
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+        val chips = @Composable {
             for (d in Difficulty.entries) {
                 FilterChip(
                     selected = vm.difficulty == d,
@@ -159,8 +167,16 @@ private fun PlayPanels(vm: AppViewModel) {
                     colors = FilterChipDefaults.filterChipColors(selectedContainerColor = Sea.PanelHigh, selectedLabelColor = Sea.Amber),
                 )
             }
-            Spacer(Modifier.weight(1f))
-            BigButton("Start", vm::startPractice)
+        }
+        if (compact) {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) { chips() }
+            BigButton("Start", vm::startPractice, Modifier.fillMaxWidth())
+        } else {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                chips()
+                Spacer(Modifier.weight(1f))
+                BigButton("Start", vm::startPractice)
+            }
         }
     }
 }
