@@ -14,6 +14,7 @@ A two-player naval battle game for Android phones and tablets. Each player hides
 - Rematches with a running score; the loser fires first next round
 - Synthesised sound effects, haptics on hits, keeps the screen awake during a match
 - Layouts for tablets and for phones held upright or sideways
+- Turns with the device even when rotation lock is on, or stays in landscape or portrait (home screen → Screen)
 
 ## Project layout
 

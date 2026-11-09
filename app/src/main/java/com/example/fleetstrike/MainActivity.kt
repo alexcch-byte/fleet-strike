@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fleetstrike.ui.AppViewModel
 import com.example.fleetstrike.ui.Screen
@@ -19,6 +20,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             FleetStrikeTheme {
                 val vm: AppViewModel = viewModel()
+                LaunchedEffect(vm.rotation) { requestedOrientation = vm.rotation.requested }
                 when (val screen = vm.screen) {
                     Screen.Home -> HomeScreen(vm)
                     is Screen.Lobby -> LobbyScreen(vm, screen.transport, screen.hosting)

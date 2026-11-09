@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.fleetstrike.game.Difficulty
 import com.example.fleetstrike.ui.AppViewModel
+import com.example.fleetstrike.ui.Rotation
 import com.example.fleetstrike.ui.Transport
 import com.example.fleetstrike.ui.theme.Sea
 import kotlin.math.PI
@@ -123,7 +124,25 @@ private fun CaptainPanel(vm: AppViewModel) {
         )
         SettingRow("Extra shot after a hit", "House rule for games you host", vm.bonusShot, vm::updateBonusShot)
         SettingRow("Sound", null, vm.soundOn, vm::updateSound)
+        Column {
+            Text("Screen", color = Sea.Text, fontSize = 16.sp)
+            Hint("Auto turns with the device, even with rotation lock on")
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            for (r in Rotation.entries) Choice(r.title, vm.rotation == r) { vm.updateRotation(r) }
+        }
     }
+}
+
+@Composable
+private fun Choice(label: String, selected: Boolean, onClick: () -> Unit) {
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = { Text(label, fontSize = 15.sp, modifier = Modifier.padding(vertical = 6.dp)) },
+        shape = RoundedCornerShape(12.dp),
+        colors = FilterChipDefaults.filterChipColors(selectedContainerColor = Sea.PanelHigh, selectedLabelColor = Sea.Amber),
+    )
 }
 
 @Composable
@@ -158,15 +177,7 @@ private fun PlayPanels(vm: AppViewModel, compact: Boolean) {
     Panel(Modifier.fillMaxWidth()) {
         PanelTitle("Practice vs computer")
         val chips = @Composable {
-            for (d in Difficulty.entries) {
-                FilterChip(
-                    selected = vm.difficulty == d,
-                    onClick = { vm.updateDifficulty(d) },
-                    label = { Text(d.title, fontSize = 15.sp, modifier = Modifier.padding(vertical = 6.dp)) },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = FilterChipDefaults.filterChipColors(selectedContainerColor = Sea.PanelHigh, selectedLabelColor = Sea.Amber),
-                )
-            }
+            for (d in Difficulty.entries) Choice(d.title, vm.difficulty == d) { vm.updateDifficulty(d) }
         }
         if (compact) {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) { chips() }

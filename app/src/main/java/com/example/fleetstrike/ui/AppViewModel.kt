@@ -2,6 +2,7 @@ package com.example.fleetstrike.ui
 
 import android.app.Application
 import android.content.Context
+import android.content.pm.ActivityInfo
 import android.net.wifi.WifiManager
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +28,17 @@ import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 enum class Transport(val title: String) { WIFI("Wi-Fi"), BLUETOOTH("Bluetooth") }
+
+/**
+ * Which way up the screen goes. AUTO follows the tablet even when its rotation lock is on, so the game can be turned
+ * sideways without a trip to the system settings; the other two hold one shape but still flip end over end.
+ * (Android 16+ ignores these on tablets for apps targeting it, and there the system's own setting decides.)
+ */
+enum class Rotation(val title: String, val requested: Int) {
+    AUTO("Auto", ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR),
+    LANDSCAPE("Landscape", ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE),
+    PORTRAIT("Portrait", ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT),
+}
 
 sealed interface Screen {
     data object Home : Screen
@@ -65,6 +77,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         private set
     var soundOn by mutableStateOf(prefs.getBoolean(KEY_SOUND, true))
         private set
+    var rotation by mutableStateOf(prefs.getString(KEY_ROTATION, null)?.let { runCatching { Rotation.valueOf(it) }.getOrNull() } ?: Rotation.AUTO)
+        private set
 
     val sound = SoundFx(app).also { it.enabled = soundOn }
 
@@ -99,6 +113,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         soundOn = on
         sound.enabled = on
         prefs.edit { putBoolean(KEY_SOUND, on) }
+    }
+
+    fun updateRotation(r: Rotation) {
+        rotation = r
+        prefs.edit { putString(KEY_ROTATION, r.name) }
     }
 
     private val displayName get() = playerName.trim().ifEmpty { "Captain" }
@@ -308,5 +327,6 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         const val KEY_BONUS = "bonusShot"
         const val KEY_DIFFICULTY = "difficulty"
         const val KEY_SOUND = "sound"
+        const val KEY_ROTATION = "rotation"
     }
 }
