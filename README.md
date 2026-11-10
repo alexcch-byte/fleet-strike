@@ -4,6 +4,26 @@ A two-player naval battle game for Android phones and tablets. Each player hides
 
 **Download:** https://alexcch-byte.github.io/fleet-strike/
 
+**Play in a browser:** https://alexcch-byte.github.io/fleet-strike/play/
+
+## Browser version
+
+`docs/play/` is the same game for any phone, tablet or computer, with no install and no build step (plain HTML, CSS and JavaScript modules):
+
+- **Play a friend nearby:** each player on their own device. The host gets a 4-letter code and a QR code; the friend scans it or types the code. The two pages find each other through the free [PeerJS](https://peerjs.com) matchmaking server, then talk directly over WebRTC (via PeerJS's relay only if a direct path can't be found). It needs an internet connection.
+- **Pass and play:** two players share one device. A curtain hides each fleet whenever the device changes hands.
+- **Practice:** against the computer, Easy / Normal / Hard.
+
+The rules, computer gunner, message protocol and fair-play check are ported from the app (`docs/play/js/rules.js`, `session.js`). The browser game and the Android app don't play each other: browsers can't open the Wi-Fi sockets or Bluetooth links the app uses.
+
+Run its tests with Node 22 or newer:
+
+```bash
+node --test "tests/web/*.test.mjs"
+```
+
+To try it locally, serve `docs/` (for example `python -m http.server --directory docs`) and open `/play/`.
+
 ## Features
 
 - Drag-and-drop fleet placement (tap a ship to rotate, Shuffle for a random layout)
@@ -26,6 +46,8 @@ A two-player naval battle game for Android phones and tablets. Each player hides
 | `app/src/main/java/.../ui` | Compose screens: home, lobby, deployment, battle |
 | `app/src/test` | Unit tests, including full computer-vs-computer matches over the real protocol and a cheating opponent |
 | `docs/` | The GitHub Pages download page |
+| `docs/play/` | The browser version |
+| `tests/web` | Tests for the browser version's rules and protocol (Node) |
 
 ## Build
 

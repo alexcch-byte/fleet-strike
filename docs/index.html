@@ -38,6 +38,9 @@
   }
   .download:hover { filter: brightness(1.06); }
   .download svg { width: 26px; height: 26px; }
+  .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
+  .download.play { background: transparent; color: var(--sonar); border: 2px solid var(--sonar); box-shadow: none; padding: 14px 28px; }
+  .download.play:hover { background: rgba(61, 220, 151, .1); }
   .meta { color: var(--dim); font-size: .95rem; margin-top: 12px; }
   .qr { display: none; margin-top: 22px; color: var(--dim); font-size: .9rem; }
   .qr canvas, .qr img { background: #fff; padding: 10px; border-radius: 12px; }
@@ -72,12 +75,19 @@
   <header>
     <img src="icon.svg" alt="">
     <h1>FLEET STRIKE</h1>
-    <p class="tagline">Hide your fleet. Hunt theirs. A two-player naval battle for Android phones and tablets.</p>
-    <a class="download" href="https://github.com/alexcch-byte/fleet-strike/releases/latest/download/FleetStrike.apk">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16"/></svg>
-      Download for Android
-    </a>
-    <div class="meta">Latest version · free · Android 8.0 or newer (Amazon Fire tablets too) · about 8 MB</div>
+    <p class="tagline">Hide your fleet. Hunt theirs. A two-player naval battle for Android phones and tablets, or right in your browser.</p>
+    <div class="actions">
+      <a class="download" href="https://github.com/alexcch-byte/fleet-strike/releases/latest/download/FleetStrike.apk">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16"/></svg>
+        Download for Android
+      </a>
+      <a class="download play" href="play/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5z" fill="currentColor"/></svg>
+        Play in your browser
+      </a>
+    </div>
+    <div class="meta">Android app: latest version · free · Android 8.0 or newer (Amazon Fire tablets too) · about 8 MB</div>
+    <div class="meta">Browser game: any phone, tablet or computer, no install. Play a friend nearby on their own device, pass one device back and forth, or practise against the computer.</div>
     <div class="qr">
       <p>On a computer? Scan this with your phone or tablet's camera to open this page there.</p>
       <div id="qr"></div>
